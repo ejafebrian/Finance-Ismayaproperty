@@ -1,0 +1,6 @@
+{
+  "name": "Laporan Keuangan Kantor - ISMAYA PROPERTY",
+  "description": "Website Laporan Keuangan Kantor ISMAYA PROPERTY dengan integrasi real-time Google Sheets, analisis arus kas (cash flow), audit debit kredit, dan bukti transaksi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
