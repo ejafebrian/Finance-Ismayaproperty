@@ -19,8 +19,9 @@ interface LoginPageProps {
   onToggleLang: () => void;
 }
 
-export function LoginPage({ onLoginSuccess, lang, onToggleLang }: LoginPageProps) {
-  const t = translations[lang];
+export function LoginPage({ onLoginSuccess, lang = 'id', onToggleLang }: LoginPageProps) {
+  const currentLang = (lang && translations[lang]) ? lang : 'id';
+  const t = translations[currentLang] || translations.id;
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

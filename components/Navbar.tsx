@@ -25,8 +25,8 @@ interface NavbarProps {
   onOpenSyncModal: () => void;
   onOpenAddModal: () => void;
   periodLabel: string;
-  lang: Language;
-  onToggleLang: () => void;
+  lang?: Language;
+  onToggleLang?: () => void;
 }
 
 export function Navbar({
@@ -39,10 +39,11 @@ export function Navbar({
   onOpenSyncModal,
   onOpenAddModal,
   periodLabel,
-  lang,
+  lang = 'id',
   onToggleLang,
 }: NavbarProps) {
-  const t = translations[lang];
+  const currentLang: Language = (lang && translations[lang]) ? lang : 'id';
+  const t = translations[currentLang] || translations.id;
 
   const formattedSyncTime = React.useMemo(() => {
     if (!lastSyncedAt) return 'Baru saja';
@@ -118,14 +119,16 @@ export function Navbar({
             </button>
 
             {/* Language Switcher */}
-            <button
-              onClick={onToggleLang}
-              title="Ubah Bahasa / Change Language"
-              className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
-            >
-              <Globe className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="font-bold">{lang.toUpperCase()}</span>
-            </button>
+            {onToggleLang && (
+              <button
+                onClick={onToggleLang}
+                title="Ubah Bahasa / Change Language"
+                className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="font-bold">{currentLang.toUpperCase()}</span>
+              </button>
+            )}
 
             {/* Reset to Google Sheet button if locally modified */}
             {isLocallyModified && onResetData && (

@@ -27,6 +27,8 @@ interface TransactionLedgerProps {
   initialBalanceNote?: string;
   tabName?: string;
   lang?: Language;
+  onEditTransaction?: (tx: Transaction) => void;
+  onDeleteTransaction?: (id: string) => void;
 }
 
 export function TransactionLedger({
@@ -39,8 +41,11 @@ export function TransactionLedger({
   initialBalanceNote,
   tabName,
   lang = 'id',
+  onEditTransaction,
+  onDeleteTransaction,
 }: TransactionLedgerProps) {
-  const t = translations[lang];
+  const currentLang: Language = (lang && translations[lang]) ? lang : 'id';
+  const t = translations[currentLang] || translations.id;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'kredit'>('all');

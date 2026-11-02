@@ -28,6 +28,7 @@ import {
   PlusCircle,
   RotateCcw,
 } from 'lucide-react';
+import { Language } from '@/lib/translations';
 
 const MULTITAB_STORAGE_KEY = 'ismaya_property_multitab_cash_v3';
 
@@ -36,6 +37,7 @@ export default function HomePage() {
   const [activeTabId, setActiveTabId] = useState<string>('oktober');
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncToast, setSyncToast] = useState<{ message: string; type?: 'success' | 'info' | 'warn' } | null>(null);
+  const [lang, setLang] = useState<Language>('id');
 
   // Modals & Selection state
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -413,6 +415,8 @@ export default function HomePage() {
             setEditingTransaction(null);
             setIsFormModalOpen(true);
           }}
+          lang={lang}
+          onToggleLang={() => setLang((prev) => (prev === 'id' ? 'en' : 'id'))}
         />
 
         {/* Hero & Quick Welcome Banner */}
@@ -516,6 +520,7 @@ export default function HomePage() {
             }}
             selectedCategory={selectedCategory}
             onClearCategory={() => setSelectedCategory(null)}
+            lang={lang}
           />
 
           {/* Google Sheets Information Callout */}
