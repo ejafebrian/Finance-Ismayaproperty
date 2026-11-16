@@ -47,19 +47,21 @@ export function MonthlyRecapBridge({
     lastRecordedDate,
   } = recap;
 
-  // Real-time dynamic clock state synchronized with current local time
-  const [liveTime, setLiveTime] = useState(() => getIndonesianFullDateTime(new Date()));
+  // Real-time dynamic clock state synchronized on client mount to prevent SSR hydration mismatch
+  const [liveTime, setLiveTime] = useState<ReturnType<typeof getIndonesianFullDateTime> | null>(null);
 
   useEffect(() => {
-    // Ticking every 1 second
-    const interval = setInterval(() => {
-      setLiveTime(getIndonesianFullDateTime(new Date()));
-    }, 1000);
-    return () => clearInterval(interval);
+    const updateClock = () => setLiveTime(getIndonesianFullDateTime(new Date()));
+    const initTimer = setTimeout(updateClock, 0);
+    const interval = setInterval(updateClock, 1000);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   const currentDateDisplay = liveTime ? `${liveTime.dayName}, ${liveTime.dateStr}` : asOfTodayDate;
-  const currentTimeDisplay = liveTime ? `${liveTime.timeStr} ${liveTime.timeZoneStr}` : (recap.asOfTodayTime || 'WIB');
+  const currentTimeDisplay = liveTime ? `${liveTime.timeStr} ${liveTime.timeZoneStr}` : (recap.asOfTodayTime || '--:--:-- WIB');
 
   return (
     <section className="mb-10 space-y-6">

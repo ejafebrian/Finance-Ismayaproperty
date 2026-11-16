@@ -353,7 +353,7 @@ export function buildFallbackData(activeTabId: string = 'oktober'): FinanceApiRe
     source: 'cached_fallback',
     sheetTitle: 'LAPORAN KEUANGAN KANTOR - ISMAYA PROPERTY',
     sheetUrl: `${GOOGLE_SHEET_URL}&gid=${activeTab.gid}`,
-    lastSyncedAt: new Date().toISOString(),
+    lastSyncedAt: '',
     activeTabId: activeTab.id,
     periodLabel: activeTab.monthLabel,
     summary: activeTab.summary,
@@ -537,9 +537,16 @@ export const MONTH_NAMES_INDONESIAN = [
 ];
 
 export function getIndonesianDateString(dateObj: Date = new Date()): string {
-  const day = dateObj.getDate();
-  const month = MONTH_NAMES_INDONESIAN[dateObj.getMonth()];
-  const year = dateObj.getFullYear();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  }).formatToParts(dateObj);
+  const day = Number(parts.find((p) => p.type === 'day')?.value || dateObj.getDate());
+  const monthIdx = Number(parts.find((p) => p.type === 'month')?.value || dateObj.getMonth() + 1) - 1;
+  const year = parts.find((p) => p.type === 'year')?.value || String(dateObj.getFullYear());
+  const month = MONTH_NAMES_INDONESIAN[monthIdx] || MONTH_NAMES_INDONESIAN[0];
   return `${day} ${month} ${year}`;
 }
 
@@ -550,12 +557,30 @@ export function getIndonesianFullDateTime(dateObj: Date = new Date()): {
   timeZoneStr: string;
   formattedFull: string;
 } {
-  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const dayName = days[dateObj.getDay()];
+  const weekdayMap: Record<string, string> = {
+    Sun: 'Minggu',
+    Mon: 'Senin',
+    Tue: 'Selasa',
+    Wed: 'Rabu',
+    Thu: 'Kamis',
+    Fri: 'Jumat',
+    Sat: 'Sabtu',
+  };
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Jakarta',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(dateObj);
+
+  const weekdayShort = parts.find((p) => p.type === 'weekday')?.value || 'Sen';
+  const dayName = weekdayMap[weekdayShort] || 'Senin';
   const dateStr = getIndonesianDateString(dateObj);
-  const hours = String(dateObj.getHours()).padStart(2, '0');
-  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-  const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+  const hours = (parts.find((p) => p.type === 'hour')?.value || '00').padStart(2, '0');
+  const minutes = (parts.find((p) => p.type === 'minute')?.value || '00').padStart(2, '0');
+  const seconds = (parts.find((p) => p.type === 'second')?.value || '00').padStart(2, '0');
   const timeStr = `${hours}:${minutes}:${seconds}`;
   const timeZoneStr = 'WIB';
 
@@ -660,9 +685,7 @@ export function computeMonthlyRecap(tabs: SheetTabInfo[]): ConsolidatedRecap {
     ? latestTab.transactions[latestTab.transactions.length - 1]
     : undefined;
 
-  // Real-time synchronization for date and clock
-  const now = new Date();
-  const timeInfo = getIndonesianFullDateTime(now);
+  const deterministicDate = lastTx ? lastTx.date : latestMonth?.monthLabel || '-';
 
   return {
     months: monthRows,
@@ -670,14 +693,10 @@ export function computeMonthlyRecap(tabs: SheetTabInfo[]): ConsolidatedRecap {
     totalCumulativeKredit,
     currentEndingBalance: latestMonth ? latestMonth.endingBalance : 0,
     totalCumulativeTransactions,
-    asOfTodayDate: timeInfo.dateStr,
-    asOfTodayTime: `${timeInfo.timeStr} ${timeZoneStr()}`,
-    asOfTodayFullStr: timeInfo.formattedFull,
-    lastRecordedDate: lastTx ? lastTx.date : timeInfo.dateStr,
+    asOfTodayDate: deterministicDate,
+    asOfTodayTime: '--:--:-- WIB',
+    asOfTodayFullStr: deterministicDate,
+    lastRecordedDate: deterministicDate,
     lastTransactionDescription: lastTx ? `${lastTx.description} (${formatRupiah(lastTx.debit || lastTx.kredit)})` : '-',
   };
-}
-
-function timeZoneStr(): string {
-  return 'WIB';
 }

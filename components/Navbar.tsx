@@ -49,7 +49,13 @@ export function Navbar({
     if (!lastSyncedAt) return 'Baru saja';
     try {
       const d = new Date(lastSyncedAt);
-      return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      if (Number.isNaN(d.getTime())) return 'Baru saja';
+      return d.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'Asia/Jakarta',
+      });
     } catch {
       return 'Baru saja';
     }
